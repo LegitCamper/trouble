@@ -38,6 +38,7 @@ mod codec;
 mod command;
 pub mod config;
 mod connection_manager;
+mod crypto;
 mod cursor;
 pub mod packet_pool;
 mod pdu;
@@ -127,6 +128,14 @@ impl Address {
             kind: AddrKind::RANDOM,
             addr: BdAddr::new(val),
         }
+    }
+
+    /// To bytes
+    pub fn to_bytes(&self) -> [u8; 7] {
+        let mut bytes = [0; 7];
+        bytes[0] = self.kind.into_inner();
+        bytes[1..].copy_from_slice(&self.addr.into_inner());
+        bytes
     }
 }
 
