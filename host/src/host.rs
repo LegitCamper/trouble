@@ -38,7 +38,11 @@ use bt_hci::event::le::{
     LePhyUpdateComplete, LeRemoteConnectionParameterRequest,
 };
 #[cfg(feature = "iso")]
-use bt_hci::event::le::{LeCisEstablished, LeCisRequest, LeCreateBigComplete, LeTerminateBigComplete};
+use bt_hci::event::le::{
+    LeBigSyncEstablished, LeBigSyncLost, LeCisEstablished, LeCisRequest, LeCreateBigComplete,
+    LePeriodicAdvertisingReport, LePeriodicAdvertisingSyncEstablished, LePeriodicAdvertisingSyncLost,
+    LeTerminateBigComplete,
+};
 use bt_hci::event::{DisconnectionComplete, EventKind, NumberOfCompletedPackets, Vendor};
 #[cfg(feature = "security")]
 use bt_hci::param::BdAddr;
@@ -1235,6 +1239,21 @@ pub trait EventHandler {
     /// Handle an LE Terminate BIG Complete event (broadcast source side)
     #[cfg(feature = "iso")]
     fn on_big_terminated(&self, _event: &LeTerminateBigComplete) {}
+    /// Handle an LE Periodic Advertising Sync Established event (broadcast sink side)
+    #[cfg(feature = "iso")]
+    fn on_periodic_adv_sync_established(&self, _event: &LePeriodicAdvertisingSyncEstablished) {}
+    /// Handle an LE Periodic Advertising Report event (broadcast sink side)
+    #[cfg(feature = "iso")]
+    fn on_periodic_adv_report(&self, _event: &LePeriodicAdvertisingReport<'_>) {}
+    /// Handle an LE Periodic Advertising Sync Lost event (broadcast sink side)
+    #[cfg(feature = "iso")]
+    fn on_periodic_adv_sync_lost(&self, _event: &LePeriodicAdvertisingSyncLost) {}
+    /// Handle an LE BIG Sync Established event (broadcast sink side)
+    #[cfg(feature = "iso")]
+    fn on_big_sync_established(&self, _event: &LeBigSyncEstablished<'_>) {}
+    /// Handle an LE BIG Sync Lost event (broadcast sink side)
+    #[cfg(feature = "iso")]
+    fn on_big_sync_lost(&self, _event: &LeBigSyncLost) {}
     /// Handle an incoming HCI ISO data packet
     #[cfg(feature = "iso")]
     fn on_iso_data(&self, _packet: &IsoPacket<'_>) {}
@@ -1599,6 +1618,33 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
                                 LeEventKind::LeTerminateBigComplete => {
                                     let e = unwrap!(LeTerminateBigComplete::from_hci_bytes_complete(event.data));
                                     event_handler.on_big_terminated(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LePeriodicAdvertisingSyncEstablished => {
+                                    let e = unwrap!(LePeriodicAdvertisingSyncEstablished::from_hci_bytes_complete(
+                                        event.data
+                                    ));
+                                    event_handler.on_periodic_adv_sync_established(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LePeriodicAdvertisingReport => {
+                                    let e = unwrap!(LePeriodicAdvertisingReport::from_hci_bytes_complete(event.data));
+                                    event_handler.on_periodic_adv_report(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LePeriodicAdvertisingSyncLost => {
+                                    let e = unwrap!(LePeriodicAdvertisingSyncLost::from_hci_bytes_complete(event.data));
+                                    event_handler.on_periodic_adv_sync_lost(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LeBigSyncEstablished => {
+                                    let e = unwrap!(LeBigSyncEstablished::from_hci_bytes_complete(event.data));
+                                    event_handler.on_big_sync_established(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LeBigSyncLost => {
+                                    let e = unwrap!(LeBigSyncLost::from_hci_bytes_complete(event.data));
+                                    event_handler.on_big_sync_lost(&e);
                                 }
                                 _ => {
                                     warn!("Unknown LE event!");
