@@ -38,7 +38,7 @@ use bt_hci::event::le::{
     LePhyUpdateComplete, LeRemoteConnectionParameterRequest,
 };
 #[cfg(feature = "iso")]
-use bt_hci::event::le::{LeCisEstablished, LeCisRequest};
+use bt_hci::event::le::{LeCisEstablished, LeCisRequest, LeCreateBigComplete, LeTerminateBigComplete};
 use bt_hci::event::{DisconnectionComplete, EventKind, NumberOfCompletedPackets, Vendor};
 #[cfg(feature = "security")]
 use bt_hci::param::BdAddr;
@@ -1229,6 +1229,12 @@ pub trait EventHandler {
     /// Handle an LE CIS Established event
     #[cfg(feature = "iso")]
     fn on_cis_established(&self, _event: &LeCisEstablished) {}
+    /// Handle an LE Create BIG Complete event (broadcast source side)
+    #[cfg(feature = "iso")]
+    fn on_big_established(&self, _event: &LeCreateBigComplete<'_>) {}
+    /// Handle an LE Terminate BIG Complete event (broadcast source side)
+    #[cfg(feature = "iso")]
+    fn on_big_terminated(&self, _event: &LeTerminateBigComplete) {}
     /// Handle an incoming HCI ISO data packet
     #[cfg(feature = "iso")]
     fn on_iso_data(&self, _packet: &IsoPacket<'_>) {}
@@ -1583,6 +1589,16 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
                                 LeEventKind::LeCisEstablished => {
                                     let e = unwrap!(LeCisEstablished::from_hci_bytes_complete(event.data));
                                     event_handler.on_cis_established(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LeCreateBigComplete => {
+                                    let e = unwrap!(LeCreateBigComplete::from_hci_bytes_complete(event.data));
+                                    event_handler.on_big_established(&e);
+                                }
+                                #[cfg(feature = "iso")]
+                                LeEventKind::LeTerminateBigComplete => {
+                                    let e = unwrap!(LeTerminateBigComplete::from_hci_bytes_complete(event.data));
+                                    event_handler.on_big_terminated(&e);
                                 }
                                 _ => {
                                     warn!("Unknown LE event!");
