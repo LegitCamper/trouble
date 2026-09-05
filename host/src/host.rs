@@ -1227,6 +1227,15 @@ pub trait EventHandler {
     /// measuring actual air delivery rate and estimating connection event timing.
     fn on_packets_completed(&self, _num_completed: usize) {}
 
+    /// Handle an HCI Disconnection Complete event before connection-manager dispatch.
+    ///
+    /// Return `true` when the handle belongs to a non-ACL transport (for example a CIS) and was
+    /// consumed by the handler. The host then skips ACL/L2CAP cleanup for that handle, avoiding
+    /// a misleading "connection handle not found" warning.
+    fn on_disconnection_complete(&self, _event: &DisconnectionComplete) -> bool {
+        false
+    }
+
     /// Handle an LE CIS Request event
     #[cfg(feature = "iso")]
     fn on_cis_request(&self, _event: &LeCisRequest) {}
@@ -1669,8 +1678,10 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
                                 None
                             }
                             .unwrap_or(Status::UNSPECIFIED);
-                            let _ = host.state.connections.disconnected(handle, reason);
-                            let _ = host.state.channels.disconnected(handle);
+                            if !event_handler.on_disconnection_complete(&e) {
+                                let _ = host.state.connections.disconnected(handle, reason);
+                                let _ = host.state.channels.disconnected(handle);
+                            }
                             let mut m = host.state.metrics.borrow_mut();
                             m.disconnect_events = m.disconnect_events.wrapping_add(1);
                         }
