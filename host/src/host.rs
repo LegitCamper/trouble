@@ -13,7 +13,7 @@ use bt_hci::cmd::controller_baseband::{
     SetEventMaskPage2,
 };
 use bt_hci::cmd::info::ReadBdAddr;
-#[cfg(feature = "subrating")]
+#[cfg(any(feature = "iso", feature = "subrating"))]
 use bt_hci::cmd::le::LeSetHostFeature;
 #[cfg(feature = "shorter-connection-intervals")]
 use bt_hci::cmd::le::LeSetHostFeatureV2;
@@ -1297,7 +1297,7 @@ impl<'d, C: Controller, P: PacketPool> Runner<'d, C, P> {
     /// Run the host.
     pub async fn run(&mut self) -> Result<(), BleHostError<C::Error>>
     where
-        C: ControllerCmdSync<Disconnect>
+        C: ControllerCmdAsync<Disconnect>
             + ControllerCmdSync<SetEventMask>
             + ControllerCmdSync<SetEventMaskPage2>
             + ControllerCmdSync<LeSetEventMask>
@@ -1328,7 +1328,7 @@ impl<'d, C: Controller, P: PacketPool> Runner<'d, C, P> {
     /// Run the host with a vendor event handler for custom events.
     pub async fn run_with_handler<E: EventHandler>(&mut self, event_handler: &E) -> Result<(), BleHostError<C::Error>>
     where
-        C: ControllerCmdSync<Disconnect>
+        C: ControllerCmdAsync<Disconnect>
             + ControllerCmdSync<SetEventMask>
             + ControllerCmdSync<SetEventMaskPage2>
             + ControllerCmdSync<LeSetEventMask>
@@ -1377,7 +1377,7 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
     /// Run the receive loop that polls the controller for events.
     pub async fn run(&mut self) -> Result<(), BleHostError<C::Error>>
     where
-        C: ControllerCmdSync<Disconnect>,
+        C: ControllerCmdAsync<Disconnect>,
     {
         let dummy = DummyHandler;
         self.run_with_handler(&dummy).await
@@ -1387,7 +1387,7 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
     /// vendor events to the provided closure.
     pub async fn run_with_handler<E: EventHandler>(&mut self, event_handler: &E) -> Result<(), BleHostError<C::Error>>
     where
-        C: ControllerCmdSync<Disconnect>,
+        C: ControllerCmdAsync<Disconnect>,
     {
         let host = &self.host;
         // use embassy_time::Instant;
@@ -1452,7 +1452,7 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
                                         ResolvablePrivateAddrs::none(),
                                     ) {
                                         let _ = host
-                                            .command(Disconnect::new(
+                                            .async_command(Disconnect::new(
                                                 e.handle,
                                                 DisconnectReason::RemoteDeviceTerminatedConnLowResources,
                                             ))
@@ -1481,7 +1481,7 @@ impl<'d, C: Controller, P: PacketPool> RxRunner<'d, C, P> {
                                         },
                                     ) {
                                         let _ = host
-                                            .command(Disconnect::new(
+                                            .async_command(Disconnect::new(
                                                 e.handle,
                                                 DisconnectReason::RemoteDeviceTerminatedConnLowResources,
                                             ))
@@ -1766,7 +1766,7 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
     /// Run the control loop for the host
     pub async fn run(&mut self) -> Result<(), BleHostError<C::Error>>
     where
-        C: ControllerCmdSync<Disconnect>
+        C: ControllerCmdAsync<Disconnect>
             + ControllerCmdSync<SetEventMask>
             + ControllerCmdSync<SetEventMaskPage2>
             + ControllerCmdSync<LeSetEventMask>
@@ -1850,7 +1850,17 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
         let mask = mask.enable_le_subrate_change(true);
 
         #[cfg(feature = "iso")]
-        let mask = mask.enable_le_cis_established_v1(true).enable_le_cis_request(true);
+        // Broadcast Isochronous Streams: without these the BIG/periodic-sync completion events
+        // are never delivered, so `LE Create BIG`/`LE BIG Create Sync` appear to hang.
+        let mask = mask
+            .enable_le_cis_established_v1(true)
+            .enable_le_cis_request(true)
+            .enable_le_create_big_complete(true)
+            .enable_le_terminate_big_complete(true)
+            .enable_le_big_sync_established(true)
+            .enable_le_big_sync_lost(true)
+            .enable_le_periodic_adv_sync_established_v1(true)
+            .enable_le_periodic_adv_report_v1(true);
 
         #[cfg(feature = "connection-params-update")]
         let mask = mask.enable_le_remote_conn_parameter_request(true);
@@ -1864,8 +1874,7 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
         // create or accept a CIS.
         #[cfg(feature = "iso")]
         {
-            const LE_FEATURE_CIS_HOST: u8 = 32;
-            if let Err(e) = LeSetHostFeature::new(LE_FEATURE_CIS_HOST, 1)
+            if let Err(e) = LeSetHostFeature::new(bt_hci::param::LeHostFeature::CONN_ISO_STREAM, true)
                 .exec(host.controller)
                 .await
             {
@@ -1882,8 +1891,7 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
         // start the Connection Subrate Update procedure on us.
         #[cfg(feature = "subrating")]
         {
-            const LE_FEATURE_CONN_SUBRATING_HOST: u8 = 38;
-            if let Err(e) = LeSetHostFeature::new(LE_FEATURE_CONN_SUBRATING_HOST, 1)
+            if let Err(e) = LeSetHostFeature::new(bt_hci::param::LeHostFeature::CONN_SUBRATING, true)
                 .exec(host.controller)
                 .await
             {
@@ -1900,8 +1908,7 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
         // start the Connection Rate Change procedure on us.
         #[cfg(feature = "shorter-connection-intervals")]
         {
-            const LE_FEATURE_SHORTER_CONNECTION_INTERVALS_HOST: u16 = 73;
-            if let Err(e) = LeSetHostFeatureV2::new(LE_FEATURE_SHORTER_CONNECTION_INTERVALS_HOST, 1)
+            if let Err(e) = LeSetHostFeatureV2::new(bt_hci::param::LeHostFeatureV2::SHORTER_CONNECTION_INTERVALS, true)
                 .exec(host.controller)
                 .await
             {
@@ -2017,8 +2024,11 @@ impl<'d, C: Controller, P: PacketPool> ControlRunner<'d, C, P> {
             {
                 Either5::First(request) => {
                     trace!("[host] poll disconnecting links");
-                    let force = match host.command(Disconnect::new(request.handle(), request.reason())).await {
-                        Ok(_) => false,
+                    let force = match host
+                        .async_command(Disconnect::new(request.handle(), request.reason()))
+                        .await
+                    {
+                        Ok(()) => false,
                         Err(BleHostError::BleHost(Error::Hci(bt_hci::param::Error::UNKNOWN_CONN_IDENTIFIER))) => {
                             warn!(
                                 "[host] disconnect returned UNKNOWN_CONN_IDENTIFIER for handle {:?}, forcing disconnect",

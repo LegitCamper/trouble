@@ -967,14 +967,14 @@ impl<'stack, P: PacketPool> Connection<'stack, P> {
         spacing_types: SpacingTypes,
     ) -> Result<(), BleHostError<T::Error>>
     where
-        T: ControllerCmdSync<LeFrameSpaceUpdate>,
+        T: ControllerCmdAsync<LeFrameSpaceUpdate>,
     {
         let handle = self.handle();
         let frame_space_min_dur = bt_hci_duration(frame_space_min);
         let frame_space_max_dur = bt_hci_duration(frame_space_max);
         match stack
             .host()
-            .command(LeFrameSpaceUpdate::new(
+            .async_command(LeFrameSpaceUpdate::new(
                 handle,
                 frame_space_min_dur,
                 frame_space_max_dur,
@@ -983,7 +983,7 @@ impl<'stack, P: PacketPool> Connection<'stack, P> {
             ))
             .await
         {
-            Ok(_) => Ok(()),
+            Ok(()) => Ok(()),
             Err(BleHostError::BleHost(crate::Error::Hci(bt_hci::param::Error::UNKNOWN_CONN_IDENTIFIER))) => {
                 Err(crate::Error::Disconnected.into())
             }
@@ -1024,7 +1024,7 @@ impl<'stack, P: PacketPool> Connection<'stack, P> {
             ))
             .await
         {
-            Ok(_) => Ok(()),
+            Ok(()) => Ok(()),
             Err(BleHostError::BleHost(crate::Error::Hci(bt_hci::param::Error::UNKNOWN_CONN_IDENTIFIER))) => {
                 Err(crate::Error::Disconnected.into())
             }
@@ -1063,7 +1063,7 @@ impl<'stack, P: PacketPool> Connection<'stack, P> {
             ))
             .await
         {
-            Ok(_) => Ok(()),
+            Ok(()) => Ok(()),
             Err(BleHostError::BleHost(crate::Error::Hci(bt_hci::param::Error::UNKNOWN_CONN_IDENTIFIER))) => {
                 Err(crate::Error::Disconnected.into())
             }
