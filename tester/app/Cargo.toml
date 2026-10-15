@@ -11,7 +11,7 @@ log = ["dep:log", "bt-hci/log", "trouble-host/log"]
 
 [dependencies]
 bitflags = "2"
-bt-hci = { version = "0.10", default-features = false, features = ["uuid"] }
+bt-hci = { version = "0.11", default-features = false, features = ["uuid"] }
 defmt = { version = "1.0.1", optional = true, features = ["alloc"] }
 embassy-futures = "0.1"
 embassy-sync = "0.8"
@@ -29,3 +29,7 @@ tokio = { version = "1", features = ["full"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(test)'] }
+
+[patch.crates-io]
+bt-hci = { git = "https://github.com/LegitCamper/bt-hci", rev = "a3b9b9785ef6e8269db31e1431f7d0710a6265cc" }
+bt-hci-transport = { git = "https://github.com/LegitCamper/bt-hci", rev = "a3b9b9785ef6e8269db31e1431f7d0710a6265cc" }

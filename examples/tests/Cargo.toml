@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 trouble-host = { path = "../../host", features = ["derive", "log"] }
-bt-hci = { version = "0.10" }
+bt-hci = { version = "0.11" }
 bt-hci-serial = "0.1"
 serde = { version = "1", features = ["derive"] }
 futures = "0.3"
@@ -34,4 +34,6 @@ anyhow = "1"
 tempfile = "3.15"
 
 [patch.crates-io]
+bt-hci = { git = "https://github.com/LegitCamper/bt-hci", rev = "a3b9b9785ef6e8269db31e1431f7d0710a6265cc" }
+bt-hci-transport = { git = "https://github.com/LegitCamper/bt-hci", rev = "a3b9b9785ef6e8269db31e1431f7d0710a6265cc" }
 hilbench-agent = { git = "https://github.com/lulf/hilbench.git", rev = "f45627c9df1af76efa231e15f824dc23894a0cd4" }

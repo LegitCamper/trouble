@@ -122,9 +122,8 @@ dependencies = [
 
 [[package]]
 name = "bt-hci"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f63b3d6f0ef006d9b87a075705d6c142b03681ad34090659647f0e227c1c667f"
+version = "0.11.0"
+source = "git+https://github.com/LegitCamper/bt-hci?rev=a3b9b9785ef6e8269db31e1431f7d0710a6265cc#a3b9b9785ef6e8269db31e1431f7d0710a6265cc"
 dependencies = [
  "bt-hci-transport",
  "btuuid",
@@ -140,8 +139,7 @@ dependencies = [
 [[package]]
 name = "bt-hci-transport"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ffb9819c69cf88877f5eebc8c5ade0ab50f2bf9475bbb3eb714d66c55b0cb64"
+source = "git+https://github.com/LegitCamper/bt-hci?rev=a3b9b9785ef6e8269db31e1431f7d0710a6265cc#a3b9b9785ef6e8269db31e1431f7d0710a6265cc"
 dependencies = [
  "embedded-io",
  "embedded-io-async",
