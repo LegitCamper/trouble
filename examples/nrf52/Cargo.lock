@@ -107,9 +107,8 @@ dependencies = [
 
 [[package]]
 name = "bt-hci"
-version = "0.10.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f63b3d6f0ef006d9b87a075705d6c142b03681ad34090659647f0e227c1c667f"
+version = "0.11.0"
+source = "git+https://github.com/LegitCamper/bt-hci?rev=a3b9b9785ef6e8269db31e1431f7d0710a6265cc#a3b9b9785ef6e8269db31e1431f7d0710a6265cc"
 dependencies = [
  "bt-hci-transport",
  "btuuid",
@@ -125,8 +124,7 @@ dependencies = [
 [[package]]
 name = "bt-hci-transport"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ffb9819c69cf88877f5eebc8c5ade0ab50f2bf9475bbb3eb714d66c55b0cb64"
+source = "git+https://github.com/LegitCamper/bt-hci?rev=a3b9b9785ef6e8269db31e1431f7d0710a6265cc#a3b9b9785ef6e8269db31e1431f7d0710a6265cc"
 dependencies = [
  "defmt 1.1.1",
  "embedded-io 0.7.1",
@@ -1198,8 +1196,8 @@ dependencies = [
 
 [[package]]
 name = "nrf-mpsl"
-version = "0.3.0"
-source = "git+https://github.com/alexmoon/nrf-sdc.git?rev=1a6e661155cdd1d6a86f3ae7b7fb117343781533#1a6e661155cdd1d6a86f3ae7b7fb117343781533"
+version = "0.4.0"
+source = "git+https://github.com/LegitCamper/nrf-sdc?rev=d6f66312ecf34c086babb2a56e3319d8da902fc9#d6f66312ecf34c086babb2a56e3319d8da902fc9"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -1215,8 +1213,8 @@ dependencies = [
 
 [[package]]
 name = "nrf-mpsl-sys"
-version = "0.2.1"
-source = "git+https://github.com/alexmoon/nrf-sdc.git?rev=1a6e661155cdd1d6a86f3ae7b7fb117343781533#1a6e661155cdd1d6a86f3ae7b7fb117343781533"
+version = "0.3.0"
+source = "git+https://github.com/LegitCamper/nrf-sdc?rev=d6f66312ecf34c086babb2a56e3319d8da902fc9#d6f66312ecf34c086babb2a56e3319d8da902fc9"
 dependencies = [
  "bindgen",
  "doxygen-rs",
@@ -1235,7 +1233,7 @@ dependencies = [
 [[package]]
 name = "nrf-sdc"
 version = "0.4.0"
-source = "git+https://github.com/alexmoon/nrf-sdc.git?rev=1a6e661155cdd1d6a86f3ae7b7fb117343781533#1a6e661155cdd1d6a86f3ae7b7fb117343781533"
+source = "git+https://github.com/LegitCamper/nrf-sdc?rev=d6f66312ecf34c086babb2a56e3319d8da902fc9#d6f66312ecf34c086babb2a56e3319d8da902fc9"
 dependencies = [
  "bt-hci",
  "bt-hci-transport",
@@ -1252,8 +1250,8 @@ dependencies = [
 
 [[package]]
 name = "nrf-sdc-sys"
-version = "0.2.1"
-source = "git+https://github.com/alexmoon/nrf-sdc.git?rev=1a6e661155cdd1d6a86f3ae7b7fb117343781533#1a6e661155cdd1d6a86f3ae7b7fb117343781533"
+version = "0.3.0"
+source = "git+https://github.com/LegitCamper/nrf-sdc?rev=d6f66312ecf34c086babb2a56e3319d8da902fc9#d6f66312ecf34c086babb2a56e3319d8da902fc9"
 dependencies = [
  "bindgen",
  "doxygen-rs",
